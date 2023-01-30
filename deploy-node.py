@@ -58,13 +58,40 @@ class NodeDeployer:
         gw = m.group(1)
         instance = m.group(2)
         return(gw,instance)
+        #:/#
 
     def create_expect_cmdfile(self, VMID, NAME, GW, REMOTE, PORT, SECRET):
-        content = f'''spawn qm terminal {VMID}
-expect -re ".*]"
-send "\\n"
-expect -re ".*#"
-send "uci set fastd.mesh_vpn.secret={SECRET}\\n"
+        content = f'''
+set timeout 120
+spawn qm terminal {VMID}
+expect "The highlighted entry will be executed automatically in"
+send "\\r"
+expect "Please press Enter to activate this console."
+#send "\\r"
+#expect "IPv6: ADDRCONF(NETDEV_CHANGE): br-setup: link becomes ready"
+#set timeout 1
+#expect {{
+#        -re "root@ffs-.*:/#" {{ send_error "SUCCESS" }}
+#        "root@(none):/#" {{ send "exit\\r"; send_error "NONE DETECTED"; exp_continue}}
+#        "Please press Enter to activate this console." {{ send "\\r"; exp_continue}}
+#        timeout {{ send "exit\\r"; send_error "TIMEOUT"; exp_continue }}
+#}}
+#send "logread -l 10\\r"
+#expect {{
+#        "init complete" {{ send_error "SUCCESS"  }}
+#        timeout {{ send "logread -l 10\\r"; exp_continue}}
+#}}
+set timeout 10
+expect {{
+        ".*" {{ sleep 1 ; exp_continue}}
+        timeout {{ send_error "No ouput for 10 seconds" }}
+}}
+set timeout 120
+send_error "!!!!DEVICE SEEMS TO BE READY!!!!"
+send "\\r"
+send "\\r"
+sleep 1
+send "uci set fastd.mesh_vpn.secret={SECRET}\\r"
 expect -re ".*#"
 send {{uci set gluon-setup-mode.@setup_mode[0].enabled='0'}}
 send "\\n"
@@ -107,11 +134,15 @@ send "uci set fastd.mesh_vpn_backbone_peer_{GW}.remote=\\'\\"{REMOTE}\\" port {P
 expect -re ".*#"
 send "uci set fastd.mesh_vpn_backbone.auto_segment=0\\n"
 expect -re ".*#"
-send "uci commit fastd\\n"
+send "uci commit fastd\\r"
 expect -re ".*#"
-send "reboot\\n"
-sleep 10
+send "sync\\r"
+expect -re ".*#"
+send "reboot\\r"
+sleep 1
+send_error "FINISHED"
 '''
+        sys.stdout.flush()
         with open("cmdfile.expect","w") as fp:
             fp.write(content)
 
@@ -143,7 +174,8 @@ sleep 10
         check_call(cmd, shell=True)
         cmd = f"qm start {VMID}"
         check_call(cmd, shell=True)
-        time.sleep(40)
+        print("Waiting for node boot...")
+        print("Attaching to node terminal")
         cmd = "expect cmdfile.expect"
         check_call(cmd, shell=True)
 
