@@ -71,8 +71,10 @@ def getInstances():
     all_segments = list(range(1,34)) # Seg 1-33
     gws["gw01n03"] = all_segments
     gws["gw04n03"] = all_segments
+    gws["gw04n06"] = all_segments
     gws["gw05n02"] = [8,25,26]
     gws["gw05n03"] = all_segments
+    gws["gw06n01"] = all_segments
     gws["gw09n03"] = all_segments
 
     try:
