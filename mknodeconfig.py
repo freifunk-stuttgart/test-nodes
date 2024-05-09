@@ -76,6 +76,7 @@ def getInstances():
     gws["gw05n03"] = all_segments
     gws["gw06n01"] = all_segments
     gws["gw09n03"] = all_segments
+    gws["gw09n04"] = all_segments
 
     try:
         with open("node-config.json","rb") as fp:
