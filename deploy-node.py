@@ -147,10 +147,12 @@ send_error "FINISHED"
             fp.write(content)
 
     def get_url(self):
-        BASE="http://firmware.freifunk-stuttgart.de/gluon"
-        BRANCH="stable"
-        VER="2.7+2022-12-03-g.fffe05d3-s.00bff8d"
-        return f"{BASE}/{BRANCH}/factory/gluon-ffs-{VER}-x86-64.img.gz"
+        BASE="https://firmware.freifunk-stuttgart.de/gluon"
+        VER="2.8+2023-03-05-g.ef8c3707-s.c45671b"
+        VER="2.9+2023-05-13-g.adfc0fc6-s.e9d4e0d"
+        VER="3.0+2024-01-29-g.e95c5d02-s.827cdfc"
+        VER="3.2.1+2024-12-18-g.297f8be7-s.1180dfa"
+        return f"{BASE}/archive/{VER}/images/factory/gluon-ffs-{VER}-x86-64.img.gz"
     
 
     def create_vm(self, VMID, NAME, MAC, BR_CLIENT, VLAN, BR_INTERNET,ZP, URL):
