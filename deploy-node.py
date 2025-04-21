@@ -21,7 +21,7 @@ class NodeDeployer:
         try:
             gwn, gwi = self.get_gw(gateway)
         except AttributeError:
-            print("Parameter -gw hat illegales Format")
+            print("Parameter -gw hat illegales Format - erwarte gwXXnYY")
             sys.exit(1)
 
         segment = segment.zfill(2)
