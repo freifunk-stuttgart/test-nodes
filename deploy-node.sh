@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 #Parameter:
 #1: name: s00-gw01n03
 #2: network ffs-c0000
@@ -24,16 +24,19 @@ VLAN=$ID
 DELAY=30
 
 echo Creating $1
-qm stop $VMID
-qm destroy $VMID --destroy-unreferenced-disks 1 --purge 1
-BASE=http://firmware.freifunk-stuttgart.de/gluon/archive
+qm stop $VMID || true
+qm destroy $VMID --destroy-unreferenced-disks 1 --purge 1 || true
+
+BASE=https://firmware.freifunk-stuttgart.de/gluon
 HASHES=g.fffe05d3-s.9d037a1
 VERSION=2.6%2B2022-11-08
-FOLDER=${VERSION}-${HASHES}
-RELEASE=${FOLDER}
-URL=${BASE}/${FOLDER}/images/factory/gluon-ffs-${RELEASE}-x86-64.img.gz
+FOLDER=stable
+RELEASE=3.2.1%2B2024-12-18-g.297f8be7-s.1180dfa
+URL=${BASE}/${FOLDER}/factory/gluon-ffs-${RELEASE}-x86-64.img.gz
+# example:
+# https://firmware.freifunk-stuttgart.de/gluon/stable/factory/gluon-ffs-3.2.1%2B2024-12-18-g.297f8be7-s.1180dfa-x86-64.img.gz
+
 DEST=/tmp/vm-$VMID-disk-0.raw
-#mkdir /zp0/vz-images/images/$VMID
 echo URL: $URL
 echo DEST: $DEST
 qm create $VMID --boot order=scsi0 --cores 1 --memory $RAM --name $NAME \
@@ -41,7 +44,8 @@ qm create $VMID --boot order=scsi0 --cores 1 --memory $RAM --name $NAME \
 	--net1 virtio,bridge=${BR_INTERNET} --ostype l26 \
 	--serial0 socket --rng0 source=/dev/urandom
 
-curl  -s $URL | gunzip  > $DEST
+curl  -s  $URL > $DEST.gz
+gunzip -f $DEST || true
 qemu-img resize -f raw $DEST $DISKSIZE
 qm importdisk $VMID $DEST $ZP
 rm $DEST
